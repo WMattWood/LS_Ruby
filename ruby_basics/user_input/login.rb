@@ -1,5 +1,5 @@
-username = admin
-password = 12345
+username = 'admin'
+password = '12345'
 
 loop do
   puts ">> Please enter username: "
