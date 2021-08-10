@@ -19,6 +19,6 @@ loop do
   puts "Invalid input. Only integers are allowed."
 end
 
-result = numerator \ denominator
+result = numerator.to_i / denominator.to_i
 
-puts "#{numerator} \ #{denominator} = #{result}"
+puts "#{numerator} / #{denominator} = #{result}"
