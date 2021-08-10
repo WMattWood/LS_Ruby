@@ -15,7 +15,7 @@ end
 loop do
   puts ">> Please enter the denominator: "
   denominator = gets.chomp
-  if denominator == 0
+  if denominator == '0'
     puts "A denominator of 0 is not allowed..."
   else
     break if valid_number?(denominator)
