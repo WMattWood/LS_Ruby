@@ -12,7 +12,7 @@ end
 loop do
   puts ">> Please enter the denominator"
   denominator = gets.chomp
-  break if valid_number?(denominator))
+  break if valid_number?(denominator)
   puts "Invalid input. Only integers are allowed."
 end
 
