@@ -1,3 +1,3 @@
 colors = 'blue pink yellow orange'
 
-colors.match?('yellow')
+puts colors.match?('yellow')
