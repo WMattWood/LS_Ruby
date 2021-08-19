@@ -1,8 +1,4 @@
-# Financially, you started the year with a clean slate.
-
 balance = 0
-
-# Here's what you earned and spent during the first three months.
 
 january = {
   income: [ 1200, 75 ],
@@ -19,8 +15,6 @@ march = {
   expenses: [ 650, 140, 350, 12, 59.9, 2.5 ]
 }
 
-# Let's see how much you've got now...
-
 def calculate_balance(month)
   plus  = month[:income].sum
   minus = month[:expenses].sum
@@ -29,7 +23,7 @@ def calculate_balance(month)
 end
 
 [january, february, march].each do |month|
-  balance = calculate_balance(month)
+  balance += calculate_balance(month)
 end
 
 puts balance
