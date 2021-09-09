@@ -1,0 +1,78 @@
+# a method that returns the sum of two integers
+
+START
+
+  GET first integer from the user
+  
+  SET integer value to a variable number1
+  
+  GET second integer from the user
+  
+  SET integer value to a variable number2
+  
+  SET the sum of number1 and number2 to a variable result
+  
+  PRINT result
+
+END
+
+
+
+
+# a method that takes an array of strings, and retuns a string that is all those strings concatenated together
+
+START
+
+  # Given an array of strings called "string_array"
+
+  SET iterator = 1
+  
+  SET output_string = an empty string
+  
+  WHILE iterator <= the number of items in "string_array"
+    SET output_string = output_string concatenated with the string at index "iterator" of the "string_array"
+    iterator += 1
+    
+  PRINT output_string
+  
+END
+
+
+
+# a method that takes an array of integers, and returns a new array with every other element
+
+START
+  
+  # Given an array of integers called "int_array"
+  
+  SET iterator = 1
+  
+  SET output_array = an empty array
+  
+  WHILE iterator <= the number of items in "int_array"
+    IF iterator.even?
+      output_array << value at int_array index "iterator" - 1
+    iterator += 1
+    
+  PRINT output_array
+  
+END
+
+# a (more literal) method that takes an array of integers, and returns a new array with every other element
+
+START
+  
+  # Given an array of integers called "int_array"
+  
+  SET iterator = 1
+  
+  SET output_array = an empty array
+  
+  WHILE iterator <= the number of items in "int_array"
+    IF iterator is even
+      SET output_array to append the value located at int_array index of: "iterator" - 1
+    iterator = iterator + 1
+    
+  PRINT output_array
+  
+END

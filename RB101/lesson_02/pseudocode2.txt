@@ -1,0 +1,28 @@
+# a program to accept multiple collections of numbers, 
+# select for the highest number in each collection, 
+# and return a list of those numbers
+
+### NOTE:  We use the keyword SUBPROCESS to indicate there is some thing 
+#########  which will take care of extracting the largest number out of a collection
+
+START
+
+SET large_numbers = []
+SET keep_going = true
+
+WHILE keep_going = true
+  GET "enter a collection"
+  SET collection
+  SET largest_number = SUBPROCESS "extract largest number from collection"
+  large_numbers << largest_number
+  GET "enter another collection?"
+  IF "yes"
+    keep_going = true
+  ELSE
+    keep_going = false
+  IF keep_going == false
+    exit the loop 
+    
+PRINT large_numbers
+
+END
