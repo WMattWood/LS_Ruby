@@ -6,20 +6,20 @@
 # answer = Kernel.gets()
 # Kernel.puts(answer)
 
-def prompt(message)
+def prompt(message) # prompt method
   Kernel.puts("=> #{message}")
 end
 
-def valid_number?(num)
+def valid_number?(num) # number validation method
   num.to_i != 0
 end
 
-def valid_operator?(op)
+def valid_operator?(op) # opvalidation method (could nest inside oploop)
   # op.to_i == 1 || op.to_i == 2 || op.to_i == 3 || op.to_i == 4
   %w(1 2 3 4).include?(op)
 end
 
-def operation_to_message(op)
+def operation_to_message(op) # operator selection to message conversion
   case op
   when '1'
     'Adding'
@@ -82,9 +82,8 @@ loop do # main loop
   prompt(operator_prompt)
 
   operator = ''
-  loop do  
+  loop do
     operator = Kernel.gets().chomp()
-    
     if valid_operator?(operator)
       break
     else
@@ -95,15 +94,15 @@ loop do # main loop
   prompt("#{operation_to_message(operator)} the two numbers...")
 
   result = case operator
-          when '1'
-            number1.to_i() + number2.to_i()
-          when '2'
-            number1.to_i() - number2.to_i()
-          when '3'
-            number1.to_i() * number2.to_i()
-          when '4'
-            number1.to_f() / number2.to_f()
-          end
+           when '1'
+             number1.to_i() + number2.to_i()
+           when '2'
+             number1.to_i() - number2.to_i()
+           when '3'
+             number1.to_i() * number2.to_i()
+           when '4'
+             number1.to_f() / number2.to_f()
+           end
 
   prompt("The result is #{result}")
 
