@@ -4,7 +4,21 @@ def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
-loop do #LOOP MAIN
+def display_results(player, computer)
+  if  (player == 'rock' && computer == 'scissors') ||
+      (player == 'paper' && computer == 'rock') ||
+      (player == 'scissors' && computer == 'paper')
+    prompt("You won!")
+  elsif (player == 'rock' && computer == 'paper') ||
+        (player == 'paper' && computer == 'scissors') ||
+        (player == 'scissors' && computer == 'rock')
+    prompt("Computer won!")
+  else
+    prompt("It's a tie.")
+  end
+end
+
+loop do # LOOP MAIN
   choice = ''
   loop do
     prompt("Choose one: #{VALID_CHOICES.join(', ')}")
@@ -21,17 +35,7 @@ loop do #LOOP MAIN
 
   prompt("You chose: #{choice};  Computer chose: #{computer_choice}")
 
-  if (choice == 'rock' && computer_choice == 'scissors') ||
-      (choice == 'paper' && computer_choice == 'rock') ||
-      (choice == 'scissors' && computer_choice == 'paper')
-    prompt("You won!")
-  elsif (choice == 'rock' && computer_choice == 'paper') ||
-        (choice == 'paper' && computer_choice == 'scissors') ||
-        (choice == 'scissors' && computer_choice == 'rock')
-    prompt("Computer won!")
-  else
-    prompt("It's a tie.")
-  end
+  display_results(choice, computer_choice)
 
   prompt("Do you want to play again?")
   answer = Kernel.gets().chomp()
