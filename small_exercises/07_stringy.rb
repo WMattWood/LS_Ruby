@@ -3,7 +3,7 @@ require 'pry-byebug'
 # def stringy(num)
 #   output = ""
 #   num.times do
-#     if output.split.to_a.last == '0' || output.length == 0
+#     if output.split.to_a.last == '0' && output.length == 0
 #       output << '1'
 #     else
 #       output << '0'
@@ -16,7 +16,7 @@ def stringy(num)
   output = ""
   num.times do
     binding.pry
-    if output.end_with? == '1' || output.length > 0
+    if output.end_with?('1') && output.length > 0
       output << '0'
     else
       output << '1'
