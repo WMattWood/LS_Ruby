@@ -22,6 +22,18 @@ def stringy(num)
   output
 end
 
+# launch school's much simpler method... use even/odd to do alternating iteration
+def stringy2(size)
+  numbers = []
+
+  size.times do |index|
+    number = index.even? ? 1 : 0
+    numbers << number
+  end
+
+  numbers.join
+end
+
 puts stringy(6) == '101010'
 puts stringy(9) == '101010101'
 puts stringy(4) == '1010'
