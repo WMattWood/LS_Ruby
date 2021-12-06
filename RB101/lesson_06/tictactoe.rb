@@ -8,6 +8,8 @@ INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = "O"
 
+
+### METHODS
 def prompt(msg)
   puts "=> #{msg}"
 end
@@ -48,7 +50,7 @@ def joinor(arr, joint=', ', last_join='or ')
   when 1 then arr.first
   when 2 then arr.join(" #{last_join} ")
   else 
-    arr[-1] = "#{last_join}" + "#{arr.last}"
+    arr[-1] = last_join + arr.last.to_s
     arr.join(joint)
   end
 end
@@ -99,6 +101,8 @@ def detect_winner(brd)
   nil
 end
 
+### GAME LOOP
+score = { computer: 0, player: 0 }
 loop do
   board = initialize_board
   loop do
@@ -113,10 +117,20 @@ loop do
 
   if someone_won?(board)
     prompt "#{detect_winner(board)} won!"
+    detect_winner(board) == 'Computer' ? score[:computer] += 1 : score[:player] += 1
   else
     prompt "It's a tie!"
   end
 
+  prompt "The score is Computer: #{score[:computer]} Player: #{score[:player]}"
+  
+  if score[:computer] == 5
+    prompt "Computer wins this round."
+    score.each { |player, pts| score[player] = 0 }
+  elsif score[:player] == 5
+    prompt "You win this round!"
+    score.each { |player, pts| score[player] = 0 }
+  end
   prompt "Play again? (Y/N)"
   answer = gets.chomp
   break unless answer.downcase.start_with?('y')
