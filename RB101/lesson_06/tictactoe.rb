@@ -48,6 +48,10 @@ def player_squares_array(brd)
   brd.keys.select { |num| brd[num] == PLAYER_MARKER }
 end
 
+def computer_squares_array(brd)
+  brd.keys.select { |num| brd[num] == PLAYER_MARKER }
+end
+
 def joinor(arr, joint=', ', last_join='or ')
   case arr.size
   when 0 then ''
@@ -71,17 +75,25 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = empty_squares_array(brd).sample
+  square = nil
+  # Defend Logic
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 2
-      square = line.reject { |marker| player_squares_array(brd).include?(marker) }.first
-      brd[square] = COMPUTER_MARKER
-      # binding.pry
+      square = line.select { |marker| brd[marker] == ' ' }.first
     end
   end
-  # binding.pry
+  # Attack Logic
+  WINNING_LINES.each do |line|
+    if brd.values_at(*line).count(COMPUTER_MARKER) == 2
+      square = line.select { |marker| brd[marker] == ' ' }.first
+    end
+  end
+  # Fallback - pick a random empty square
+  if !square
+    square = empty_squares_array(brd).sample
+  end
+
   brd[square] = COMPUTER_MARKER
-  # binding.pry
 end
 
 def board_full?(brd)
