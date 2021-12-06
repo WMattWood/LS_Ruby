@@ -76,21 +76,25 @@ end
 
 def computer_places_piece!(brd)
   square = nil
+   # Attack Logic
+  WINNING_LINES.each do |line|
+    if brd.values_at(*line).count(COMPUTER_MARKER) == 2
+      square = line.select { |marker| brd[marker] == ' ' }.first
+    end
+  end
   # Defend Logic
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 2
       square = line.select { |marker| brd[marker] == ' ' }.first
     end
   end
-  # Attack Logic
-  WINNING_LINES.each do |line|
-    if brd.values_at(*line).count(COMPUTER_MARKER) == 2
-      square = line.select { |marker| brd[marker] == ' ' }.first
-    end
-  end
   # Fallback - pick a random empty square
   if !square
-    square = empty_squares_array(brd).sample
+    if brd[5] == ' '
+      square = 5
+    else
+      square = empty_squares_array(brd).sample
+    end
   end
 
   brd[square] = COMPUTER_MARKER
@@ -130,14 +134,42 @@ end
 score = { computer: 0, player: 0 }
 loop do
   board = initialize_board
-  loop do
-    display_board(board)
-    player_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
-    computer_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
+  
+  # Who Goes First Logic
+  p1 = nil
+  players = ['Player', 'Computer']
+  prompt "Who should go first? (Me or You)"
+  answer = gets.chomp.downcase
+  if answer.start_with? 'y' 
+    p1 = 'Computer'
+  elsif answer.start_with? 'm'
+    p1 = 'Player'
+  else
+    prompt "Okay then I will choose..."
+    sleep 1.8
+    p1 = players.sample
   end
+  prompt "#{p1} goes first."
+  sleep 2
 
+  if p1 == 'Player'
+    loop do
+      display_board(board)
+      player_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+      computer_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+    end
+  else
+    loop do
+      computer_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+      display_board(board)
+      player_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+    end
+  end
+  
   display_board(board)
 
   if someone_won?(board)
