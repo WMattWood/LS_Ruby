@@ -8,7 +8,6 @@ INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = "O"
 
-
 ### METHODS
 def prompt(msg)
   puts "=> #{msg}"
@@ -57,7 +56,7 @@ def joinor(arr, joint=', ', last_join='or ')
   when 0 then ''
   when 1 then arr.first
   when 2 then arr.join(" #{last_join} ")
-  else 
+  else
     arr[-1] = last_join + arr.last.to_s
     arr.join(joint)
   end
@@ -74,29 +73,37 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
-def computer_places_piece!(brd)
+def attack_logic(brd)
   square = nil
-   # Attack Logic
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(COMPUTER_MARKER) == 2
       square = line.select { |marker| brd[marker] == ' ' }.first
     end
   end
-  # Defend Logic
+  square
+end
+
+def defend_logic(brd)
+  square = nil
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 2
-      square = line.select { |marker| brd[marker] == ' ' }.first
+      # i think the logic below can be refactored
+      choice = line.select { |marker| brd[marker] == ' ' }.first
+      square = choice if choice
     end
   end
-  # Fallback - pick a random empty square
-  if !square
-    if brd[5] == ' '
-      square = 5
-    else
-      square = empty_squares_array(brd).sample
-    end
-  end
+  square
+end
 
+def fallback_logic(brd)
+  brd[5] == ' ' ? 5 : empty_squares_array(brd).sample
+end
+
+def computer_places_piece!(brd)
+  sleep 2
+  square = attack_logic(brd)
+  square = defend_logic(brd) if !square
+  square = fallback_logic(brd) if !square
   brd[square] = COMPUTER_MARKER
 end
 
@@ -120,9 +127,9 @@ def someone_won?(brd)
   !!detect_winner(brd)
 end
 
+# rubocop: disable Metrix/CyclomaticComplexity, Metrix/PerceivedComplexity
 def detect_winner(brd)
   WINNING_LINES.each do |line|
-    # READABLE OPTION
     if brd[line[0]] == PLAYER_MARKER &&
        brd[line[1]] == PLAYER_MARKER &&
        brd[line[2]] == PLAYER_MARKER
@@ -132,27 +139,22 @@ def detect_winner(brd)
           brd[line[2]] == COMPUTER_MARKER
       return 'Computer'
     end
-    # CLEVER IDIOMATIC RUBY OPTION
-    # if brd.values_at(*line).count(PLAYER_MARKER) == 3
-    #   return 'Player'
-    # elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
-    #   return 'Computer'
-    # end
   end
   nil
 end
+# rubocop: enable Metrix/CyclomaticComplexity, Metrix/PerceivedComplexity
 
 ### GAME LOOP
 score = { computer: 0, player: 0 }
 loop do
   board = initialize_board
-  
+
   # Who Goes First Logic
   p1 = nil
   players = ['Player', 'Computer']
   prompt "Who should go first? (Me or You)"
   answer = gets.chomp.downcase
-  if answer.start_with? 'y' 
+  if answer.start_with? 'y'
     p1 = 'Computer'
   elsif answer.start_with? 'm'
     p1 = 'Player'
@@ -170,24 +172,27 @@ loop do
     p1 = alternate_player(p1)
     break if someone_won?(board) || board_full?(board)
   end
-  
+
   display_board(board)
 
   if someone_won?(board)
     prompt "#{detect_winner(board)} won!"
+    # Chose to keep this line 'too long' for the sake of readability.
+    # I did try doing a multi-line ternary expression but rubocop did not
+    # like that either.
     detect_winner(board) == 'Computer' ? score[:computer] += 1 : score[:player] += 1
   else
     prompt "It's a tie!"
   end
 
   prompt "The score is Computer: #{score[:computer]} Player: #{score[:player]}"
-  
+
   if score[:computer] == 5
     prompt "Computer wins this round."
-    score.each { |player, pts| score[player] = 0 }
+    score.each { |player, _| score[player] = 0 }
   elsif score[:player] == 5
     prompt "You win this round!"
-    score.each { |player, pts| score[player] = 0 }
+    score.each { |player, _| score[player] = 0 }
   end
   prompt "Play again? (Y/N)"
   answer = gets.chomp
