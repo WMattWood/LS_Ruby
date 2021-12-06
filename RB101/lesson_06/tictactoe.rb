@@ -13,7 +13,7 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
-# rubocop:disable Metrix/AbcSize
+# rubocop:disable Metrics/AbcSize
 def display_board(brd)
   system 'clear'
   puts "You are #{PLAYER_MARKER}.  Computer is #{COMPUTER_MARKER}."
@@ -31,7 +31,7 @@ def display_board(brd)
   puts "     |     |"
   puts ""
 end
-# rubocop:enable Metrix/AbcSize
+# rubocop:enable Metrics/AbcSize
 
 def initialize_board
   new_board = {}
@@ -77,7 +77,8 @@ def attack_logic(brd)
   square = nil
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(COMPUTER_MARKER) == 2
-      square = line.select { |marker| brd[marker] == ' ' }.first
+      choice = line.select { |marker| brd[marker] == ' ' }.first
+      square = choice if choice
     end
   end
   square
@@ -87,7 +88,6 @@ def defend_logic(brd)
   square = nil
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 2
-      # i think the logic below can be refactored
       choice = line.select { |marker| brd[marker] == ' ' }.first
       square = choice if choice
     end
@@ -100,7 +100,7 @@ def fallback_logic(brd)
 end
 
 def computer_places_piece!(brd)
-  sleep 2
+  sleep 1
   square = attack_logic(brd)
   square = defend_logic(brd) if !square
   square = fallback_logic(brd) if !square
@@ -127,7 +127,7 @@ def someone_won?(brd)
   !!detect_winner(brd)
 end
 
-# rubocop: disable Metrix/CyclomaticComplexity, Metrix/PerceivedComplexity
+# rubocop: disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 def detect_winner(brd)
   WINNING_LINES.each do |line|
     if brd[line[0]] == PLAYER_MARKER &&
@@ -142,7 +142,7 @@ def detect_winner(brd)
   end
   nil
 end
-# rubocop: enable Metrix/CyclomaticComplexity, Metrix/PerceivedComplexity
+# rubocop: enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
 ### GAME LOOP
 score = { computer: 0, player: 0 }
@@ -177,10 +177,7 @@ loop do
 
   if someone_won?(board)
     prompt "#{detect_winner(board)} won!"
-    # Chose to keep this line 'too long' for the sake of readability.
-    # I did try doing a multi-line ternary expression but rubocop did not
-    # like that either.
-    detect_winner(board) == 'Computer' ? score[:computer] += 1 : score[:player] += 1
+    score[detect_winner(board).downcase.to_sym] += 1
   else
     prompt "It's a tie!"
   end
