@@ -100,6 +100,18 @@ def computer_places_piece!(brd)
   brd[square] = COMPUTER_MARKER
 end
 
+def place_piece!(brd, current_player)
+  if current_player == 'Player'
+    player_places_piece!(brd)
+  else
+    computer_places_piece!(brd)
+  end
+end
+
+def alternate_player(current_player)
+  current_player == 'Player' ? 'Computer' : 'Player'
+end
+
 def board_full?(brd)
   empty_squares_array(brd).empty?
 end
@@ -152,22 +164,11 @@ loop do
   prompt "#{p1} goes first."
   sleep 2
 
-  if p1 == 'Player'
-    loop do
-      display_board(board)
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-      computer_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-    end
-  else
-    loop do
-      computer_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-      display_board(board)
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-    end
+  loop do
+    display_board(board)
+    place_piece!(board, p1)
+    p1 = alternate_player(p1)
+    break if someone_won?(board) || board_full?(board)
   end
   
   display_board(board)
