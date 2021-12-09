@@ -130,9 +130,6 @@ loop do
         # 6. If dealer bust, player wins.
         if total(dealer_hand) > 21
           # - Display hand
-          show_cards(dealer_hand, player_hand)
-          prompt "Dealer's hand is now: #{total(dealer_hand)}"
-          sleep 2
           prompt "Dealer busts."
           player_win = true
           sleep 2
@@ -164,9 +161,9 @@ loop do
     else
       prompt "It's a tie."
     end
-    
+
     sleep 2
-    
+
     # 8. Another hand?
     if deck.size < 4
       prompt "That's it for this deck."
