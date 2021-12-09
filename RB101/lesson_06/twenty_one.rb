@@ -83,23 +83,26 @@ loop do
 
     2.times { dealer_hand << deck.pop }
     2.times { player_hand << deck.pop }
+
+    hidden_hand = [['XXX', 'XXXXX'], dealer_hand[1]]
+
     # 3. Player turn
     loop do
       # - Display hand
-      show_cards(dealer_hand, player_hand)
+      show_cards(hidden_hand, player_hand)
       # - Hit or stay
-      prompt "Player currently has #{total(player_hand)}"
+      prompt "Player currently has: #{total(player_hand)}"
       prompt "Do you want to stay or hit? (Stay/Hit)"
       answer = gets.chomp.downcase
       # - Repeat until bust or 'stay'
       if answer.chars.first == 's'
         prompt "Player stays."
-        sleep 1
+        sleep 2
         break
       elsif answer.chars.first == 'h'
         prompt "Player hits."
         player_hand << deck.pop
-        sleep 1
+        sleep 2
       else
         prompt "Ahem... I'll try that again."
         sleep 2
@@ -108,7 +111,10 @@ loop do
       if total(player_hand) > 21
         # - Display hand
         show_cards(dealer_hand, player_hand)
+        prompt "Player currently has: #{total(player_hand)}"
+        sleep 2
         prompt "Player busts."
+        sleep 2
         dealer_win = true
         break
       end
@@ -119,24 +125,29 @@ loop do
       loop do
         # - Display hand
         show_cards(dealer_hand, player_hand)
-        # - Hit or stay
-        # - Repeat until total >= 17
-        if total(dealer_hand) >= 17
-          prompt "Dealer stays."
-          sleep 1
-          break
-        else
-          prompt "Dealer hits."
-          dealer_hand << deck.pop
-          sleep 1
-        end
+        prompt "Dealer is at: #{total(dealer_hand)}"
+        sleep 2
         # 6. If dealer bust, player wins.
         if total(dealer_hand) > 21
           # - Display hand
           show_cards(dealer_hand, player_hand)
+          prompt "Dealer's hand is now: #{total(dealer_hand)}"
+          sleep 2
           prompt "Dealer busts."
           player_win = true
+          sleep 2
           break
+        end
+        # - Hit or stay
+        # - Repeat until total >= 17
+        if total(dealer_hand) >= 17
+          prompt "Dealer stays."
+          sleep 2
+          break
+        else
+          prompt "Dealer hits."
+          dealer_hand << deck.pop
+          sleep 2
         end
       end
     end
@@ -153,7 +164,9 @@ loop do
     else
       prompt "It's a tie."
     end
-
+    
+    sleep 2
+    
     # 8. Another hand?
     if deck.size < 4
       prompt "That's it for this deck."
