@@ -25,6 +25,13 @@ def show_cards(dealer, player)
   prompt "Player has: #{format_hand(player)}"
 end
 
+def display_round_totals(pts_array)
+  puts '==================================='
+  prompt "Dealer has won #{pts_array[0]} hands."
+  prompt "Player has won #{pts_array[1]} hands."
+  puts '==================================='
+end
+
 # rubocop: disable Style/ConditionalAssignment
 def total(hand)
   # create array of card values
@@ -67,6 +74,7 @@ sleep 2
 loop do
   # 1. Initialize deck
   deck = shuffle_cards
+  points_array = [0,0]
   system 'clear'
   prompt "Shuffling..."
   sleep 2
@@ -156,17 +164,23 @@ loop do
     # 7. Compare cards and declare a winner
     if player_win
       prompt "Player wins."
+      points_array[1] += 1
     elsif dealer_win
       prompt "Dealer wins."
+      points_array[0] += 1
     elsif total_player > total_dealer
       prompt "Player wins."
+      points_array[1] += 1
     elsif total_dealer > total_player
       prompt "Dealer wins."
+      points_array[0] += 1
     else
       prompt "It's a tie."
     end
 
     sleep 2
+
+    display_round_totals(points_array)
 
     # 8. Another hand?
     if deck.size < 4
