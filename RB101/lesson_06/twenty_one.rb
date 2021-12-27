@@ -1,5 +1,3 @@
-# require 'pry-byebug'
-
 SUITS = %w(Hearts Diamonds Clubs Spades)
 VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
 WELCOME = "***** WELCOME TO THE CASINO *****"
@@ -10,11 +8,12 @@ def prompt(message)
 end
 
 def shuffle_cards
-  VALUES.product(SUITS).shuffle
+  shuffled_deck = VALUES.product(SUITS).shuffle
+  shuffled_deck.map { |card| Hash[value: card[0], suit: card[1]] }
 end
 
 def format_hand(cards)
-  parsed = cards.map { |card| "#{card[0]} of #{card[1]}" }
+  parsed = cards.map { |card| "#{card[:value]} of #{card[:suit]}" }
   parsed.join(', ')
 end
 
@@ -25,28 +24,39 @@ def show_cards(dealer, player)
   prompt "Player has: #{format_hand(player)}"
 end
 
-def display_round_totals(pts_array)
+def busted?(hand)
+  total(hand) > 21
+end
+
+def player_win?(dealer, player)
+  total(player) <= 21 && total(player) > total(dealer)
+end
+
+def dealer_win?(dealer, player)
+  total(dealer) <= 21 && total(dealer) > total(player)
+end
+
+def display_round_totals(pts_hash)
   puts '==================================='
-  prompt "Dealer has won #{pts_array[0]} hands."
-  prompt "Player has won #{pts_array[1]} hands."
+  prompt "Dealer has won #{pts_hash[:dealer]} hands."
+  prompt "Player has won #{pts_hash[:player]} hands."
   puts '==================================='
 end
 
-# rubocop: disable Style/ConditionalAssignment
 def total(hand)
   # create array of card values
-  values = hand.map { |card| card[0] }
+  values = hand.map { |card| card[:value] }
   total = 0
 
   # add up values
   values.each do |value|
-    if value == 'Ace'
-      total += 11
-    elsif value.to_i == 0
-      total += 10
-    else
-      total += value.to_i
-    end
+    total = if value == 'Ace'
+              total + 11
+            elsif value.to_i == 0
+              total + 10
+            else
+              total + value.to_i
+            end
   end
 
   # correct based on number of aces if over 21
@@ -56,15 +66,6 @@ def total(hand)
 
   total
 end
-# rubocop: enable Style/ConditionalAssignment
-
-# def compare(dealer, player)
-#   if total(dealer) >= total(player)
-#     'Dealer Wins'
-#   else
-#     'Player Wins'
-#   end
-# end
 
 # LOAD MESSAGE
 puts WELCOME
@@ -74,7 +75,7 @@ sleep 2
 loop do
   # 1. Initialize deck
   deck = shuffle_cards
-  points_array = [0,0]
+  points = { dealer: 0, player: 0 }
   system 'clear'
   prompt "Shuffling..."
   sleep 2
@@ -86,15 +87,13 @@ loop do
     # 2. Deal cards to player and dealer
     player_hand = []
     dealer_hand = []
-    player_win = false
-    dealer_win = false
 
     2.times { dealer_hand << deck.pop }
     2.times { player_hand << deck.pop }
     total_player = total(player_hand)
     total_dealer = total(dealer_hand)
 
-    hidden_hand = [['XXX', 'XXXXX'], dealer_hand[1]]
+    hidden_hand = [{ value: 'XXX', suit: 'XXXXX' }, dealer_hand[1]]
 
     # 3. Player turn
     loop do
@@ -105,11 +104,11 @@ loop do
       prompt "Do you want to stay or hit? (Stay/Hit)"
       answer = gets.chomp.downcase
       # - Repeat until bust or 'stay'
-      if answer.chars.first == 's'
+      if answer == 's' || answer == 'stay'
         prompt "Player stays."
         sleep 2
         break
-      elsif answer.chars.first == 'h'
+      elsif answer == 'h' || answer == 'hit'
         prompt "Player hits."
         player_hand << deck.pop
         total_player = total(player_hand)
@@ -126,13 +125,12 @@ loop do
         sleep 2
         prompt "Player busts."
         sleep 2
-        dealer_win = true
         break
       end
     end
 
     # 5. Dealer turn
-    if !dealer_win
+    if !busted?(player_hand)
       loop do
         # - Display hand
         show_cards(dealer_hand, player_hand)
@@ -142,7 +140,6 @@ loop do
         if total_dealer > 21
           # - Display hand
           prompt "Dealer busts."
-          player_win = true
           sleep 2
           break
         end
@@ -162,41 +159,35 @@ loop do
     end
 
     # 7. Compare cards and declare a winner
-    if player_win
-      prompt "Player wins."
-      points_array[1] += 1
-    elsif dealer_win
+    if busted?(player_hand) || dealer_win?(dealer_hand, player_hand)
       prompt "Dealer wins."
-      points_array[0] += 1
-    elsif total_player > total_dealer
+      points[:dealer] += 1
+    elsif busted?(dealer_hand) || player_win?(dealer_hand, player_hand)
       prompt "Player wins."
-      points_array[1] += 1
-    elsif total_dealer > total_player
-      prompt "Dealer wins."
-      points_array[0] += 1
+      points[:player] += 1
     else
       prompt "It's a tie."
     end
 
     sleep 2
 
-    display_round_totals(points_array)
+    display_round_totals(points)
 
     # 8. Another hand?
-    if deck.size < 4
+    if deck.size < 8
       prompt "That's it for this deck."
       break
     else
       prompt "Play another hand? (Y/N)"
       answer = gets.chomp.downcase
-      break unless answer.chars.first == 'y'
+      break unless answer == 'y' || answer == 'yes'
     end
   end
 
   # 9. Reshuffle the deck?
   prompt "Would you like to reshuffle the deck and start again? (Y/N)"
   answer = gets.chomp.downcase
-  if answer.chars.first != 'y'
+  unless answer == 'y' || answer == 'yes'
     system 'clear'
     prompt "Thank you for playing 21."
     sleep 1
