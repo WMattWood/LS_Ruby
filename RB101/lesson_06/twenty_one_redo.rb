@@ -1,5 +1,3 @@
-#require 'pry-byebug'
-
 SUITS = %w(Hearts Diamonds Clubs Spades)
 VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
 WELCOME = "***** WELCOME TO THE CASINO *****"
@@ -11,7 +9,7 @@ end
 
 def shuffle_cards
   shuffled_deck = VALUES.product(SUITS).shuffle
-  shuffled_deck.map {|card| Hash[:value => card[0], :suit => card[1]]}
+  shuffled_deck.map { |card| Hash[value: card[0], suit: card[1]] }
 end
 
 def format_hand(cards)
@@ -77,7 +75,7 @@ sleep 2
 loop do
   # 1. Initialize deck
   deck = shuffle_cards
-  points = {dealer: 0, player: 0}
+  points = { dealer: 0, player: 0 }
   system 'clear'
   prompt "Shuffling..."
   sleep 2
@@ -89,15 +87,13 @@ loop do
     # 2. Deal cards to player and dealer
     player_hand = []
     dealer_hand = []
-    #player_win = false
-    #dealer_win = false
 
     2.times { dealer_hand << deck.pop }
     2.times { player_hand << deck.pop }
     total_player = total(player_hand)
     total_dealer = total(dealer_hand)
 
-    hidden_hand = [{value: 'XXX', suit: 'XXXXX'}, dealer_hand[1]]
+    hidden_hand = [{ value: 'XXX', suit: 'XXXXX' }, dealer_hand[1]]
 
     # 3. Player turn
     loop do
@@ -129,7 +125,6 @@ loop do
         sleep 2
         prompt "Player busts."
         sleep 2
-        #dealer_win = true
         break
       end
     end
@@ -145,7 +140,6 @@ loop do
         if total_dealer > 21
           # - Display hand
           prompt "Dealer busts."
-          #player_win = true
           sleep 2
           break
         end
