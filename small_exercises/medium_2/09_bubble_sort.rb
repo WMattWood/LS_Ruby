@@ -1,26 +1,25 @@
-require 'pry'
-
 def bubble_sort!(array)
-  pairs_cleared = []
- 
+  counter = []
+  
+  (array.size - 1).times do
+    counter << false
+  end
+
   loop do
 
-    (array.size - 1).times do
-      pairs_cleared <<  false
-    end
-
-    0.upto(array.size - 2) do |index|
-      if array[index] < array[index + 1]
-        pairs_cleared[index] = true
+    (array.size - 1).times do |idx|
+      if array[idx] > array[idx+1]
+        array[idx], array[idx+1] = array[idx+1], array[idx]
+        counter[idx] = false
       else
-        array[index], array[index + 1] = array[index + 1], array[index]
+        counter[idx] = true
       end
     end
 
-    break if pairs_cleared.all?(true)
+    break if counter.all?(true)
+
   end
-  
-  array
+
 end
 
 
