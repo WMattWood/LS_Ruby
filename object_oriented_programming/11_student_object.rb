@@ -19,5 +19,5 @@ joe = Student.new("Joe", 85)
 mark = Student.new("Mark", 64)
 
 puts "yes" if joe.better_grade_than?(mark)
-# joe.grade
-# mark.grade
+joe.grade
+mark.grade
