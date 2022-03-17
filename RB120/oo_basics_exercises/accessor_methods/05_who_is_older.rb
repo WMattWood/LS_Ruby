@@ -1,4 +1,5 @@
 class Person
+
   attr_writer :age
 
   def older_than?(other)
@@ -7,7 +8,7 @@ class Person
 
   protected
 
-  attr_reader :age
+    attr_reader :age
 
 end
 
