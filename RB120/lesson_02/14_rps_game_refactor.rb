@@ -23,18 +23,18 @@ class History
     @moves_list = []
   end
 
-  def print_moves(computer, human)
+  def print_moves(human)
     if @moves_list.empty?
       puts 'No moves have been made yet!'
     else
       @moves_list.each_with_index do |move, index|
-        puts "Round #{index + 1}: #{computer} chose #{move[0]}, #{human} chose #{move[1]}"
+        puts "Round #{index + 1}: #{move[2]} chose #{move[0]}, #{human} chose #{move[1]}"
       end
     end
   end
 
-  def log_moves(computer_choice, player_choice)
-    @moves_list << [computer_choice, player_choice]
+  def log_moves(computer_choice, player_choice, bot)
+    @moves_list << [computer_choice, player_choice, bot]
   end
 end
 
@@ -87,8 +87,38 @@ end
 
 # Object class for the Computer subclass of Player
 class Computer < Player
-  def choose
-    choose_move(Move::VALUES.sample)
+  attr_accessor :bot
+
+  def set_name
+    @bot = choose_computer_player
+    @name = @bot.name
+  end
+
+  def choose_computer_player
+    system 'clear'
+    opponent = ''
+    loop do
+      puts 'Who do you want to play? [1]R2D2 [2]Hal [3]Chappie [4]C3P0'
+      opponent = gets.chomp
+      break if %w[1 2 3 4].include? opponent
+
+      puts 'Sorry, must choose 1, 2, 3, or 4.'
+    end
+
+    select_opponent(opponent)
+  end
+
+  def select_opponent(number)
+    case number
+    when '1' then R2D2.new
+    when '2' then Hal.new
+    when '3' then Chappie.new
+    when '4' then C3P0.new
+    end
+  end
+
+  def choose(optional_argument = nil)
+    @bot.choose(optional_argument)
   end
 end
 
@@ -96,6 +126,15 @@ end
 class R2D2 < Computer
   def set_name
     @name = 'R2D2'
+  end
+
+  def choose(*)
+    choose_move(Move::VALUES.sample)
+  end
+
+  def speak(*)
+    puts "R2D2 says: \'%Beep%*Boop*&Biip&*Boop*\'"
+    sleep 1
   end
 end
 
@@ -113,15 +152,36 @@ class Hal < Computer
                when 'lizard' then %w[rock scissors].sample
                when 'spock' then %w[lizard paper].sample
                end
-          
+
     choose_move(hal_move)
+  end
+
+  def speak(user)
+    puts "Hal says: \"I'm sorry #{user}, I can't let you do that.\""
+    sleep 1
   end
 end
 
 # R2D2 Computer class
 class C3P0 < Computer
+  attr_accessor :previous_move
   def set_name
     @name = 'C3P0'
+  end
+
+  def choose(user_move)
+    if @previous_move
+      choose_move(previous_move)
+      @previous_move = user_move.to_s
+    else
+      @previous_move = user_move.to_s
+      choose_move(Move::VALUES.sample)
+    end
+  end
+
+  def speak(*)
+    puts "C3P0 says: \'Oh dear...\'"
+    sleep 1
   end
 end
 
@@ -131,8 +191,13 @@ class Chappie < Computer
     @name = 'Chappie'
   end
 
-  def choose
+  def choose(*)
     choose_move('lizard')
+  end
+
+  def speak(*)
+    puts "Chappie says: \'I like lizards!\'"
+    sleep 1
   end
 end
 
@@ -233,25 +298,7 @@ class RPSGame
     system 'clear'
     @human = Human.new
     @history = History.new
-  end
-
-  def choose_computer_player
-    system 'clear'
-    opponent = ''
-    loop do
-      puts "Who do you want to play? [1]R2D2 [2]Hal [3]Chappie [4]C3P0"
-      opponent = gets.chomp
-      break if %w[1 2 3 4].include? opponent
-
-      puts 'Sorry, must choose 1, 2, 3, or 4.'
-    end
-
-    case opponent
-    when '1' then R2D2.new
-    when '2' then Hal.new
-    when '3' then Chappie.new
-    when '4' then C3P0.new
-    end
+    @computer = Computer.new
   end
 
   # Game Orchestration Engine
@@ -275,7 +322,6 @@ class RPSGame
 
   # main_game_loop and subroutines
   def main_game_loop
-    @computer = choose_computer_player
     loop do
       take_turns
       decide_winner
@@ -290,20 +336,24 @@ class RPSGame
     UI.pause
     human.choose
     UI.pause
-    computer.name == 'Hal' ? computer.choose(human.move) : computer.choose
-    history.log_moves(computer.move, human.move)
+    computer_choose
+    history.log_moves(computer.bot.move, human.move, computer.bot.name)
+  end
+
+  def computer_choose
+    computer.name == 'Hal' || computer.name == 'C3P0' ? computer.choose(human.move) : computer.choose
   end
 
   def decide_winner
-    human.score += 1 if human.move > computer.move
-    computer.score += 1 if human.move < computer.move
+    human.score += 1 if human.move > computer.bot.move
+    computer.score += 1 if human.move < computer.bot.move
   end
 
   def play_again?
     loop do
       puts 'Would you like to play again? (y/n) - Press [h] to view history'
       case gets.chomp
-      when 'h' then history.print_moves(computer.name, human.name)
+      when 'h' then history.print_moves(human.name)
       when 'y' then return true
       when 'n' then return false
       else puts 'Sorry, must be y or n.'
@@ -313,13 +363,15 @@ class RPSGame
 
   def reset_round
     puts "Let's start the next round..."
+    UI.pause
     human.score = 0
-    computer.score = 0
+    @computer = Computer.new
   end
 
   # display_winner and subroutines
   def display_winner
-    display_moves
+    display_human_move
+    display_computer_move
     puts winner_message
     UI.continue
     UI.pause
@@ -327,18 +379,21 @@ class RPSGame
     display_round_winner
   end
 
-  def display_moves
+  def display_human_move
     puts "You chose #{human.move}."
     sleep 1
-    puts "#{computer.name} chose #{computer.move}."
+  end
+
+  def display_computer_move
+    puts "#{computer.name} chose #{computer.bot.move}."
     sleep 1
-    puts "Chappie says: 'I like lizards!'" if computer.name == 'Chappie'
+    computer.bot.speak(human.name)
   end
 
   def winner_message
-    if human.move > computer.move
+    if human.move > computer.bot.move
       "#{human.name} won!"
-    elsif human.move < computer.move
+    elsif human.move < computer.bot.move
       "#{computer.name} won!"
     else
       "It's a tie!"
