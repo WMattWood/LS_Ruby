@@ -2,11 +2,13 @@
 
 require 'io/console'
 
-# This version, I am trying to appease rubocop
+# Final version - rubocop appeased and some improvements made to gameplay.
+# If I were to refactor it further, I would structure the individual
+# rounds and whole game as two discrete loops/methods.
 
 # User Interface Module
 module Flow
-  def self.continue
+  def self.press_any_key
     puts 'Press any key to continue'
     STDIN.getch
   end
@@ -317,10 +319,11 @@ class RPSGame
   # Game Orchestration Engine
   def play
     display_welcome_message
-    # loop do
-    main_game_loop
-      # break unless play_again?
-    # end
+    loop do
+      main_game_loop
+      break unless play_again?
+      reset_round
+    end
     display_goodbye_message
   end
 
@@ -329,7 +332,7 @@ class RPSGame
     Flow.pause
     puts "Welcome to Rock, Paper, Scissors #{human.name}!"
     puts 'First player to reach 3/3 wins the round!'
-    Flow.continue
+    Flow.press_any_key
   end
 
   def display_goodbye_message
@@ -340,16 +343,13 @@ class RPSGame
   def main_game_loop
     loop do
       take_turns
-      decide_winner
       display_winner
-      if human.score == 3 || computer.score == 3
-        break unless play_again?
-        next
-      end
+      break if human.score == 3 || computer.score == 3
       break unless continue?
     end
   end
 
+  # take_turns and subroutines
   def take_turns
     Flow.pause
     human.choose
@@ -366,55 +366,21 @@ class RPSGame
     end
   end
 
-  def decide_winner
-    human.score += 1 if human.move > computer.bot.move
-    computer.score += 1 if human.move < computer.bot.move
-  end
-
-  def continue?
-    loop do
-      puts 'Would you like to continue? (y/n) - Press [h] to view history'
-      case gets.chomp
-      when 'h' then history.print_moves(human.name)
-      when 'y' then return true
-      when 'n' then return false
-      else puts 'Sorry, must be y or n.'
-      end
-    end
-  end
-
-  def play_again?
-    loop do
-      puts 'Would you like to play another round? (y/n)'\
-           ' - Press [h] to view history'
-      case gets.chomp
-      when 'h' then history.print_moves(human.name)
-      when 'n' then return false
-      when 'y'
-        reset_round
-        return true
-      else puts 'Sorry, must be y or n.'
-      end
-    end
-  end
-
-  def reset_round
-    puts "Let's start the next round..."
-    sleep 2
-    Flow.pause
-    human.score = 0
-    @computer = Computer.new
-  end
-
   # display_winner and subroutines
   def display_winner
+    decide_winner
     display_human_move
     display_computer_move
     puts winner_message
-    Flow.continue
+    Flow.press_any_key
     Flow.pause
     display_score
     display_round_winner
+  end
+
+  def decide_winner
+    human.score += 1 if human.move > computer.bot.move
+    computer.score += 1 if human.move < computer.bot.move
   end
 
   def display_human_move
@@ -448,6 +414,40 @@ class RPSGame
     winner = human.name if human.score == 3
     winner = computer.name if computer.score == 3
     puts "'><*><*'*><*> #{winner} wins the round! <*><*'*><*><'" if winner
+  end
+
+  # end of game methods
+  def play_again?
+    loop do
+      puts 'Would you like to play another round? (y/n)'\
+           ' - Press [h] to view history'
+      case gets.chomp
+      when 'h' then history.print_moves(human.name)
+      when 'n' then return false
+      when 'y' then return true
+      else puts 'Sorry, must be y or n.'
+      end
+    end
+  end
+
+  def continue?
+    loop do
+      puts 'Would you like to continue? (y/n) - Press [h] to view history'
+      case gets.chomp
+      when 'h' then history.print_moves(human.name)
+      when 'y' then return true
+      when 'n' then return false
+      else puts 'Sorry, must be y or n.'
+      end
+    end
+  end
+
+  def reset_round
+    puts "Let's start the next round..."
+    sleep 2
+    Flow.pause
+    human.score = 0
+    @computer = Computer.new
   end
 end
 
