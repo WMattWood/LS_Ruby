@@ -1,12 +1,15 @@
 require 'pry'
 
-class Board
-  INITIAL_MARKER = ' '
+class Board 
+  WINNING_LINES = [[1,2,3], [4,5,6], [7,8,9]] +
+                  [[1,4,7], [2,5,8], [3,6,9]] +
+                  [[1,5,9], [3,5,7]]
+
   # attr_reader :squares
   
   def initialize
     @squares = {} 
-    (1..9).each {|key| @squares[key] = Square.new(INITIAL_MARKER)}
+    (1..9).each {|key| @squares[key] = Square.new}
   end
 
   def get_square_at(key)
@@ -20,12 +23,33 @@ class Board
   def unmarked_keys
     @squares.keys.select {|key| @squares[key].unmarked?}
   end
+
+  def full?
+    unmarked_keys.empty?
+  end
+
+  def someone_won?
+    !!detect_winner
+  end
+
+  #returns winning marker or nil
+  def detect_winner
+    WINNING_LINES.each do |line|
+      if line.all? {|digit| @squares[digit].marker == TTTGame::HUMAN_MARKER}
+        return TTTGame::HUMAN_MARKER
+      elsif line.all? {|digit| @squares[digit].marker == TTTGame::COMPUTER_MARKER} 
+        return TTTGame::COMPUTER_MARKER
+      end
+    end
+    nil
+  end
 end
 
 class Square
+  INITIAL_MARKER = ' '
   attr_accessor :marker
 
-  def initialize(marker)
+  def initialize(marker=INITIAL_MARKER)
     @marker = marker
     # maybe a status to keep track of each square's mark
   end
@@ -35,7 +59,7 @@ class Square
   end
 
   def unmarked?
-    marker == Board::INITIAL_MARKER
+    marker == INITIAL_MARKER
   end
 end
 
@@ -70,6 +94,7 @@ class TTTGame
   end
 
   def display_board
+    system 'clear'
     puts ""
     puts "     |     |     "
     puts "  #{board.get_square_at(1)}  |  #{board.get_square_at(2)}  |  #{board.get_square_at(3)}  "
@@ -101,20 +126,33 @@ class TTTGame
     board.set_square_at(board.unmarked_keys.sample, computer.marker)
   end
 
+  def display_result
+    display_board
+
+    case board.detect_winner
+    when human.marker
+      puts "You win!"
+    when computer.marker
+      puts "Computer won!"
+    else
+      puts "The board is full!"
+    end
+  end
+
   def play
     welcome_message
     loop do # begin_game
       display_board
       loop do # begin_round
         human_moves
-        # break if someone_won? || board_full?
+        break if board.someone_won? || board.full?
 
         computer_moves
-        # break if someone_won? || board_full?
+        break if board.someone_won? || board.full?
         
         display_board
       end
-    #display_result
+    display_result
     break #unless play_again?
     end
 
