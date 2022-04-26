@@ -8,8 +8,8 @@ class Board
   # attr_reader :squares
   
   def initialize
-    @squares = {} 
-    (1..9).each {|key| @squares[key] = Square.new}
+    @squares = {}
+    reset
   end
 
   def get_square_at(key)
@@ -43,6 +43,10 @@ class Board
     end
     nil
   end
+
+  def reset
+    (1..9).each {|key| @squares[key] = Square.new}
+  end 
 end
 
 class Square
@@ -93,8 +97,9 @@ class TTTGame
     puts "Thanks for playing Tic Tac Toe! Goodbye!"
   end
 
-  def display_board
-    system 'clear'
+  def display_board(clear=true)
+    system 'clear' if clear
+    puts "You're a #{human.marker}. Computer is a #{computer.marker}."
     puts ""
     puts "     |     |     "
     puts "  #{board.get_square_at(1)}  |  #{board.get_square_at(2)}  |  #{board.get_square_at(3)}  "
@@ -139,10 +144,25 @@ class TTTGame
     end
   end
 
+  def play_again?
+    answer = nil
+    loop do
+      puts 'Would you like to play again? (y/n)'
+      answer = gets.chomp.downcase
+      break if %w(y n).include? answer
+      puts "Sorry, must be y or n"
+    end
+
+    answer == 'n' ? false : true
+  end
+
   def play
+    system 'clear'
     welcome_message
+
     loop do # begin_game
-      display_board
+      display_board(false)
+
       loop do # begin_round
         human_moves
         break if board.someone_won? || board.full?
@@ -152,8 +172,13 @@ class TTTGame
         
         display_board
       end
-    display_result
-    break #unless play_again?
+
+      display_result
+
+      break unless play_again?
+      board.reset
+      system 'clear'
+      puts "Let's play again!"
     end
 
     goodbye_message
