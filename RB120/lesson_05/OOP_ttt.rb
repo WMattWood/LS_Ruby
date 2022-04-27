@@ -4,8 +4,6 @@ class Board
   WINNING_LINES = [[1,2,3], [4,5,6], [7,8,9]] +
                   [[1,4,7], [2,5,8], [3,6,9]] +
                   [[1,5,9], [3,5,7]]
-
-  # attr_reader :squares
   
   def initialize
     @squares = {}
@@ -26,10 +24,6 @@ class Board
     puts "     |     |     "
   end
 
-  # def set_square_at(key, marker)
-  #   @squares[key].marker = marker
-  # end
-
   def []=(key, marker)
     @squares[key].marker = marker
   end
@@ -46,7 +40,6 @@ class Board
     !!winning_marker
   end
 
-  #returns winning marker or nil
   def winning_marker
     WINNING_LINES.each do |line|
       if line.all? {|digit| @squares[digit].marker == TTTGame::HUMAN_MARKER}
@@ -101,6 +94,34 @@ class TTTGame
     @human = Player.new(HUMAN_MARKER)
     @computer = Player.new(COMPUTER_MARKER)
   end
+
+  def play
+    clear
+    welcome_message
+
+    loop do # begin_game
+      display_board
+
+      loop do # begin_round
+        human_moves
+        break if board.someone_won? || board.full?
+
+        computer_moves
+        break if board.someone_won? || board.full?
+        
+        clear_screen_and_display_board
+      end
+
+      display_result
+      break unless play_again?
+      reset_game
+      display_play_again_message
+    end
+
+    goodbye_message
+  end
+
+  private
 
   def clear
     system 'clear'
@@ -176,32 +197,6 @@ class TTTGame
   def display_play_again_message
     puts "Let's play again!"
     puts ""
-  end
-
-  def play
-    clear
-    welcome_message
-
-    loop do # begin_game
-      display_board
-
-      loop do # begin_round
-        human_moves
-        break if board.someone_won? || board.full?
-
-        computer_moves
-        break if board.someone_won? || board.full?
-        
-        clear_screen_and_display_board
-      end
-
-      display_result
-      break unless play_again?
-      reset_game
-      display_play_again_message
-    end
-
-    goodbye_message
   end
 end
 
