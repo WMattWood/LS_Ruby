@@ -1,15 +1,15 @@
-require 'pry'
+class Board
+  WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
+                  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] +
+                  [[1, 5, 9], [3, 5, 7]]
 
-class Board 
-  WINNING_LINES = [[1,2,3], [4,5,6], [7,8,9]] +
-                  [[1,4,7], [2,5,8], [3,6,9]] +
-                  [[1,5,9], [3,5,7]]
-  
   def initialize
     @squares = {}
     reset
   end
 
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def draw
     puts "     |     |     "
     puts "  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}  "
@@ -23,13 +23,15 @@ class Board
     puts "  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}  "
     puts "     |     |     "
   end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
 
   def []=(key, marker)
     @squares[key].marker = marker
   end
 
   def unmarked_keys
-    @squares.keys.select {|key| @squares[key].unmarked?}
+    @squares.keys.select { |key| @squares[key].unmarked? }
   end
 
   def full?
@@ -40,20 +42,21 @@ class Board
     !!winning_marker
   end
 
+  def match?(line, marker)
+    line.all? { |num| @squares[num].marker == marker }
+  end
+
   def winning_marker
     WINNING_LINES.each do |line|
-      if line.all? {|digit| @squares[digit].marker == TTTGame::HUMAN_MARKER}
-        return TTTGame::HUMAN_MARKER
-      elsif line.all? {|digit| @squares[digit].marker == TTTGame::COMPUTER_MARKER} 
-        return TTTGame::COMPUTER_MARKER
-      end
+      return TTTGame::HUMAN_MARKER if match?(line, TTTGame::HUMAN_MARKER)
+      return TTTGame::COMPUTER_MARKER if match?(line, TTTGame::COMPUTER_MARKER)
     end
     nil
   end
 
   def reset
-    (1..9).each {|key| @squares[key] = Square.new}
-  end 
+    (1..9).each { |key| @squares[key] = Square.new }
+  end
 end
 
 class Square
@@ -66,7 +69,7 @@ class Square
   end
 
   def to_s
-    @marker 
+    @marker
   end
 
   def unmarked?
@@ -108,12 +111,13 @@ class TTTGame
 
         computer_moves
         break if board.someone_won? || board.full?
-        
+
         clear_screen_and_display_board
       end
 
       display_result
       break unless play_again?
+
       reset_game
       display_play_again_message
     end
@@ -128,19 +132,19 @@ class TTTGame
   end
 
   def welcome_message
-    puts "Welcome to Tic Tac Toe!"
-    puts ""
+    puts 'Welcome to Tic Tac Toe!'
+    puts ''
   end
 
   def goodbye_message
-    puts "Thanks for playing Tic Tac Toe! Goodbye!"
+    puts 'Thanks for playing Tic Tac Toe! Goodbye!'
   end
 
   def display_board
     puts "You're a #{human.marker}. Computer is a #{computer.marker}."
-    puts ""
+    puts ''
     board.draw
-    puts ""
+    puts ''
   end
 
   def clear_screen_and_display_board
@@ -154,7 +158,8 @@ class TTTGame
     loop do
       square = gets.chomp.to_i
       break if board.unmarked_keys.include?(square)
-      puts "Sorry that is not a valid choice."
+
+      puts 'Sorry that is not a valid choice.'
     end
 
     board[square] = human.marker
@@ -169,11 +174,11 @@ class TTTGame
 
     case board.winning_marker
     when human.marker
-      puts "You win!"
+      puts 'You win!'
     when computer.marker
-      puts "Computer won!"
+      puts 'Computer won!'
     else
-      puts "The board is full!"
+      puts 'The board is full!'
     end
   end
 
@@ -183,10 +188,11 @@ class TTTGame
       puts 'Would you like to play again? (y/n)'
       answer = gets.chomp.downcase
       break if %w(y n).include? answer
-      puts "Sorry, must be y or n"
+
+      puts 'Sorry, must be y or n'
     end
 
-    answer == 'n' ? false : true
+    answer != 'n'
   end
 
   def reset_game
@@ -196,7 +202,7 @@ class TTTGame
 
   def display_play_again_message
     puts "Let's play again!"
-    puts ""
+    puts ''
   end
 end
 
