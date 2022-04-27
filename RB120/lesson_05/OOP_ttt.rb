@@ -98,34 +98,38 @@ class TTTGame
     @computer = Player.new(COMPUTER_MARKER)
   end
 
+  # overall program orchestration
   def play
     clear
     welcome_message
-
-    loop do # begin_game
-      display_board
-
-      loop do # begin_round
-        human_moves
-        break if board.someone_won? || board.full?
-
-        computer_moves
-        break if board.someone_won? || board.full?
-
-        clear_screen_and_display_board
-      end
-
-      display_result
-      break unless play_again?
-
-      reset_game
-      display_play_again_message
-    end
-
+    play_game
     goodbye_message
   end
 
   private
+
+  # turn orchestration method
+  def play_a_turn
+    loop do # begin_round
+      human_moves
+      break if board.someone_won? || board.full?
+      computer_moves
+      break if board.someone_won? || board.full?
+      clear_screen_and_display_board
+    end
+  end
+
+  # game orchestration method
+  def play_game
+    loop do # begin_game
+      display_board
+      play_a_turn
+      display_result
+      break unless play_again?
+      reset_game
+      display_play_again_message
+    end
+  end
 
   def clear
     system 'clear'
@@ -158,7 +162,6 @@ class TTTGame
     loop do
       square = gets.chomp.to_i
       break if board.unmarked_keys.include?(square)
-
       puts 'Sorry that is not a valid choice.'
     end
 
@@ -188,7 +191,6 @@ class TTTGame
       puts 'Would you like to play again? (y/n)'
       answer = gets.chomp.downcase
       break if %w(y n).include? answer
-
       puts 'Sorry, must be y or n'
     end
 
