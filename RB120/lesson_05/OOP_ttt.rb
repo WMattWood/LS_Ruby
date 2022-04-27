@@ -34,6 +34,16 @@ class Board
     @squares.keys.select { |key| @squares[key].unmarked? }
   end
 
+  def formatted_unmarked_keys(delimiter)
+    if unmarked_keys.size > 2
+      unmarked_keys[0..-2].join(delimiter) + " or #{unmarked_keys[-1]}"
+    elsif unmarked_keys.size > 1
+      "#{unmarked_keys[0]} or #{unmarked_keys[1]}"
+    else
+      unmarked_keys[0].to_s
+    end
+  end
+
   def full?
     unmarked_keys.empty?
   end
@@ -78,10 +88,15 @@ class Square
 end
 
 class Player
-  attr_reader :marker
+  attr_reader :marker, :score
 
   def initialize(marker)
     @marker = marker
+    @score = 0
+  end
+
+  def add_point
+    self.score += 1
   end
 end
 
@@ -157,7 +172,7 @@ class TTTGame
   end
 
   def human_moves
-    puts "Choose a square [#{board.unmarked_keys.join(', ')}]"
+    puts "Choose a square: [#{board.formatted_unmarked_keys(', ')}]"
     square = nil
     loop do
       square = gets.chomp.to_i
@@ -183,6 +198,12 @@ class TTTGame
     else
       puts 'The board is full!'
     end
+
+    display_scores
+  end
+
+  def display_scores
+    puts "The score is [Player: #{human.score} Computer: #{computer.score}"
   end
 
   def play_again?
