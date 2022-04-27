@@ -88,7 +88,7 @@ class Square
 end
 
 class Player
-  attr_reader :marker, :score
+  attr_accessor :marker, :score
 
   def initialize(marker)
     @marker = marker
@@ -132,6 +132,7 @@ class TTTGame
       break if board.someone_won? || board.full?
       clear_screen_and_display_board
     end
+    tally_points
   end
 
   # game orchestration method
@@ -140,12 +141,14 @@ class TTTGame
       display_board
       play_a_turn
       display_result
+      winner_ceremony if there_is_a_winner?
       break unless play_again?
       reset_game
       display_play_again_message
     end
   end
 
+  # general system methods
   def clear
     system 'clear'
   end
@@ -159,6 +162,7 @@ class TTTGame
     puts 'Thanks for playing Tic Tac Toe! Goodbye!'
   end
 
+  # user display methods
   def display_board
     puts "You're a #{human.marker}. Computer is a #{computer.marker}."
     puts ''
@@ -171,6 +175,26 @@ class TTTGame
     display_board
   end
 
+  def display_scores
+    puts "The score is [Player: #{human.score} Computer: #{computer.score}"
+  end
+
+  def display_result
+    clear_screen_and_display_board
+
+    case board.winning_marker
+    when human.marker
+      puts 'You win!'
+    when computer.marker
+      puts 'Computer won!'
+    else
+      puts "It's a tie!"
+    end
+
+    display_scores
+  end
+
+  # gameplay moves
   def human_moves
     puts "Choose a square: [#{board.formatted_unmarked_keys(', ')}]"
     square = nil
@@ -187,23 +211,32 @@ class TTTGame
     board[board.unmarked_keys.sample] = computer.marker
   end
 
-  def display_result
-    clear_screen_and_display_board
-
-    case board.winning_marker
-    when human.marker
-      puts 'You win!'
-    when computer.marker
-      puts 'Computer won!'
-    else
-      puts 'The board is full!'
-    end
-
-    display_scores
+  def tally_points
+    board.winning_marker == human.marker ? human.add_point : computer.add_point
   end
 
-  def display_scores
-    puts "The score is [Player: #{human.score} Computer: #{computer.score}"
+  # end of round methods
+
+  def winner_ceremony
+    display_winner
+    reset_score
+  end
+
+  def display_winner
+    if human.score == 5
+      puts "^*^*^*^*^ You won the round! ^*^*^*^*^"
+    elsif computer.score == 5
+      puts "|||||| Computer wins the round! ||||||"
+    end
+  end
+
+  def reset_score
+    human.score = 0
+    computer.score = 0
+  end
+
+  def there_is_a_winner?
+    human.score == 5 || computer.score == 5
   end
 
   def play_again?
