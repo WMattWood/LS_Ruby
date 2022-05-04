@@ -1,8 +1,195 @@
 require 'pry'
 
+module GameFlow
+  def clear
+    system 'clear'
+  end
+
+  def pause
+    sleep 2
+  end
+end
+
+class Game
+  include GameFlow
+  attr_reader :player, :dealer
+  attr_accessor :deck
+
+  def initialize
+    clear
+    @deck = Deck.new
+    @player = Player.new
+    @dealer = Dealer.new
+  end
+
+  def pretty_print(string)
+    string.chars.each do |char|
+      print char
+      sleep 0.03
+    end
+    pause
+  end
+
+  def welcome_message
+    clear
+    pretty_print "Welcome to 21 #{player.name}!"
+    puts "\n"
+    pretty_print "Your dealer today is #{dealer.name}."
+  end
+
+  def start
+    welcome_message
+    loop do
+      play_one_round
+      show_result
+      continue_game? ? next : break
+    end
+    goodbye_message
+  end
+
+  def play_one_round
+    loop do
+      deal_cards
+      player_turn
+      break if player.bust?
+      dealer_turn
+      dealer.stays unless dealer.bust?
+      break
+    end
+  end
+
+  def deal_cards
+    clear
+    puts "Dealing a new hand..."
+    pause
+    deck.deal_hand(player)
+    deck.deal_hand(dealer)
+  end
+
+  def display_hidden_cards
+    clear
+    pretty_print "Dealer has: "
+    print "XXX of XXXXX"
+    print ", #{deck.cards[1]}"
+    puts "\n"
+    pretty_print "Player has: "
+    print player.show_hand
+    puts "\n"
+    pretty_print "Your total is #{player.total}"
+  end
+
+  def display_cards
+    clear
+    puts "Dealer has: #{dealer.show_hand}"
+    puts "Player has: #{player.show_hand}"
+    puts "Dealer total is #{dealer.total}"
+    puts "Your total is #{player.total}"
+  end
+
+  # PLAYER METHODS
+  def player_turn
+    display_hidden_cards
+    loop do
+      if player.bust?
+        player.goes_bust
+        break
+      end
+      break unless player_wants_to_hit?
+      player.hit(deck)
+      display_hidden_cards
+    end
+  end
+
+  def player_wants_to_hit?
+    puts "Would you like to [H]it or [S]tay? (H/S)"
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if %w(h s).include? answer
+      puts "Please enter 'h' or 's' to hit or stay."
+    end
+    answer == 'h'
+  end
+
+  # DEALER METHODS
+  def dealer_turn
+    display_cards
+    loop do
+      if dealer.bust?
+        dealer.goes_bust
+        break
+      end
+      break unless dealer_should_hit?
+      dealer.hit(deck)
+      display_cards
+    end
+  end
+
+  def dealer_should_hit?
+    dealer.total < 18 && dealer.total <= player.total
+  end
+
+  # WINNER DETERMINATION METHODS
+  def show_result
+    if player.bust?
+      dealer.wins
+    elsif dealer.bust?
+      player.wins
+    else
+      dealer.total > player.total ? dealer.wins : player.wins
+    end
+  end
+
+  # END OF ROUND METHODS
+  def continue_game?
+    deck.finished? ? ask_to_reshuffle : play_again?
+  end
+
+  def play_again?
+    puts "Would you like to play another hand? (y/n)"
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if %w(y n).include? answer
+      puts "Please enter 'y' or 'n'"
+    end
+    answer == 'y'
+  end
+
+  def ask_to_reshuffle
+    puts "This deck is finished.  Would you like to reshuffle the deck? (y/n)"
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if %w(y n).include? answer
+      puts "Please enter 'y' or 'n'"
+    end
+    reshuffle if answer == 'y'
+  end
+
+  def reshuffle
+    clear
+    puts "Reshuffling..."
+    pause
+    self.deck = Deck.new
+  end
+
+  def goodbye_message
+    puts 'Thank you for playing!'
+  end
+end
+
 module Hand
   def total
     total = 0
+    total = calculate_card_values(total)
+    hand.select { |card| card.value == "Ace" }.count.times do
+      total -= 10 if total > 21
+    end
+    total
+  end
+
+  def calculate_card_values(total)
     hand.each do |card|
       total += case card.value
                when 'Ace' then 11
@@ -11,10 +198,6 @@ module Hand
                when 'King' then 10
                else card.value.to_i
                end
-    end
-
-    hand.select { |card| card.value == "Ace" }.count.times do
-      total -= 10 if total > 21
     end
     total
   end
@@ -26,20 +209,28 @@ module Hand
   def bust?
     total > 21
   end
-
-  def hit(deck)
-    hand << deck.deal_one_card
-  end
 end
 
 class Participant
   include Hand
+  include GameFlow
   attr_accessor :name, :hand, :score
 
   def initialize
     @hand = []
     @score = 0
     set_name
+  end
+
+  def goes_bust
+    puts "#{name} busts."
+    pause
+  end
+
+  def wins
+    puts "#{name} wins the hand."
+    score += 1
+    pause
   end
 end
 
@@ -54,6 +245,12 @@ class Player < Participant
     end
     self.name = answer
   end
+
+  def hit(deck)
+    puts "#{name} hits..."
+    hand << deck.deal_one_card
+    pause
+  end
 end
 
 class Dealer < Participant
@@ -62,12 +259,25 @@ class Dealer < Participant
   def set_name
     self.name = DEALER_NAMES.sample
   end
+
+  def hit(deck)
+    pause
+    puts "#{name} hits..."
+    hand << deck.deal_one_card
+    pause
+  end
+
+  def stays
+    puts "#{name} stays."
+    pause
+  end
 end
 
 class Deck
   attr_reader :cards
 
   SUITS = %w(Hearts Diamonds Clubs Spades)
+  # SUITS = %w(Hearts)
   VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
 
   def initialize
@@ -89,7 +299,7 @@ class Deck
   end
 
   def finished?
-    cards.empty?
+    cards.size < 8
   end
 end
 
@@ -103,129 +313,6 @@ class Card
 
   def to_s
     "#{value} of #{suit}"
-  end
-end
-
-class Game
-  attr_reader :player, :dealer, :deck
-
-  def initialize
-    @deck = Deck.new
-    @player = Player.new
-    @dealer = Dealer.new
-  end
-
-  def start
-    welcome_message
-    loop do
-      deal_cards
-      display_cards
-      player_turn
-      dealer_turn if !player.bust?
-      show_result
-      break unless continue_game?
-      system 'clear'
-    end
-    goodbye_message
-  end
-
-  def welcome_message
-    system 'clear'
-    puts "Welcome to 21 #{player.name}!"
-  end
-
-  def deal_cards
-    deck.deal_hand(player)
-    deck.deal_hand(dealer)
-  end
-
-  def display_cards
-    system 'clear'
-    puts "Dealer has: #{dealer.show_hand}"
-    puts "Player has: #{player.show_hand}"
-    puts "Dealer total is #{dealer.total}"
-    puts "Your total is #{player.total}"
-  end
-
-  def player_turn
-    loop do
-      if player.bust?
-        puts "Player busts."
-        break
-      end
-      player_hit? ? (player.hit(deck)) : break
-      display_cards
-    end
-  end
-
-  def dealer_turn
-    loop do
-      if dealer.bust?
-        puts "Dealer busts."
-        break
-      end
-      if dealer_hit?
-        puts "The dealer hits..."
-        sleep 2
-        dealer.hit(deck)
-      else
-        puts "The dealer stays."
-        sleep 2
-        break
-      end
-      display_cards
-      sleep 2
-    end
-  end
-
-  def player_hit?
-    puts "Would you like to [H]it or [S]tay? (H/S)"
-    answer = nil
-    loop do
-      answer = gets.chomp.downcase
-      break if %w(h s).include? answer
-      puts "Please enter 'h' or 's' to hit or stay."
-    end
-    answer == 'h'
-  end
-
-  def dealer_hit?
-    dealer.total < 18 && dealer.total <= player.total
-  end
-
-  def show_result
-    if player.bust?
-      dealer_wins
-    elsif dealer.bust?
-      player_wins
-    else
-      dealer.total > player.total ? dealer_wins : player_wins
-    end
-  end
-
-  def player_wins
-    puts "#{player.name} wins the hand."
-    player.score += 1
-  end
-
-  def dealer_wins
-    puts 'Dealer wins the hand.'
-    dealer.score += 1
-  end
-
-  def continue_game?
-    puts "Would you like to play another hand? (y/n)"
-    answer = nil
-    loop do
-      answer = gets.chomp.downcase
-      break if %w(y n).include? answer
-      puts "Please enter 'y' or 'n'"
-    end
-    answer == 'y'
-  end
-
-  def goodbye_message
-    puts 'Thank you for playing!'
   end
 end
 
