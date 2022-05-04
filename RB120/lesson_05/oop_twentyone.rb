@@ -5,8 +5,8 @@ module GameFlow
     system 'clear'
   end
 
-  def pause
-    sleep 2
+  def pause(time=1)
+    sleep time
   end
 end
 
@@ -27,13 +27,16 @@ class Game
       print char
       sleep 0.03
     end
+    puts "\n"
     pause
+  end
+
+  def reveal_print()
   end
 
   def welcome_message
     clear
     pretty_print "Welcome to 21 #{player.name}!"
-    puts "\n"
     pretty_print "Your dealer today is #{dealer.name}."
   end
 
@@ -60,22 +63,25 @@ class Game
 
   def deal_cards
     clear
-    puts "Dealing a new hand..."
+    pretty_print "Dealing a new hand..."
     pause
     deck.deal_hand(player)
     deck.deal_hand(dealer)
+    display_initial_deal
+  end
+
+  def display_initial_deal
+    clear
+    pretty_print "Dealer has: XXX of XXXXX, #{dealer.hand[1]}"
+    pretty_print "Player has: #{player.show_hand}"
+    puts "Your total is #{player.total}"
   end
 
   def display_hidden_cards
     clear
-    pretty_print "Dealer has: "
-    print "XXX of XXXXX"
-    print ", #{deck.cards[1]}"
-    puts "\n"
-    pretty_print "Player has: "
-    print player.show_hand
-    puts "\n"
-    pretty_print "Your total is #{player.total}"
+    puts "Dealer has: XXX of XXXXX, #{dealer.hand[1]}"
+    puts "Player has: #{player.show_hand}"
+    puts "Your total is #{player.total}"
   end
 
   def display_cards
@@ -129,7 +135,7 @@ class Game
     dealer.total < 18 && dealer.total <= player.total
   end
 
-  # WINNER DETERMINATION METHODS
+  # END OF ROUND METHODS
   def show_result
     if player.bust?
       dealer.wins
@@ -138,9 +144,15 @@ class Game
     else
       dealer.total > player.total ? dealer.wins : player.wins
     end
+    show_round_score
   end
 
-  # END OF ROUND METHODS
+  def show_round_score
+    clear
+    pretty_print "#{dealer.name}'s score is: #{dealer.score} shiny watermelons."
+    pretty_print "#{player.name}'s score is: #{player.score} shiny watermelons."
+  end
+
   def continue_game?
     deck.finished? ? ask_to_reshuffle : play_again?
   end
@@ -229,7 +241,7 @@ class Participant
 
   def wins
     puts "#{name} wins the hand."
-    score += 1
+    self.score += 1
     pause
   end
 end
