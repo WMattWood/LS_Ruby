@@ -5,7 +5,7 @@ module GameFlow
     system 'clear'
   end
 
-  def pause(time=1)
+  def pause(time=2)
     sleep time
   end
 end
@@ -74,7 +74,9 @@ class Game
     clear
     pretty_print "Dealer has: XXX of XXXXX, #{dealer.hand[1]}"
     pretty_print "Player has: #{player.show_hand}"
+    pause(1)
     puts "Your total is #{player.total}"
+    pause
   end
 
   def display_hidden_cards
@@ -82,6 +84,15 @@ class Game
     puts "Dealer has: XXX of XXXXX, #{dealer.hand[1]}"
     puts "Player has: #{player.show_hand}"
     puts "Your total is #{player.total}"
+    pause
+  end
+
+  def reveal_dealer_card
+    clear
+    puts "Dealer has: #{dealer.show_hand}"
+    puts "Player has: #{player.show_hand}"
+    puts "Your total is #{player.total}"
+    pause
   end
 
   def display_cards
@@ -90,13 +101,15 @@ class Game
     puts "Player has: #{player.show_hand}"
     puts "Dealer total is #{dealer.total}"
     puts "Your total is #{player.total}"
+    pause
   end
 
   # PLAYER METHODS
   def player_turn
-    display_hidden_cards
     loop do
+      #display_hidden_cards
       if player.bust?
+        reveal_dealer_card
         player.goes_bust
         break
       end
@@ -141,16 +154,23 @@ class Game
       dealer.wins
     elsif dealer.bust?
       player.wins
+    elsif dealer.total == player.total
+      tie_game
     else
       dealer.total > player.total ? dealer.wins : player.wins
     end
     show_round_score
   end
 
+  def tie_game
+    puts "It's a tie!"
+    pause
+  end
+
   def show_round_score
     clear
-    pretty_print "#{dealer.name}'s score is: #{dealer.score} shiny watermelons."
-    pretty_print "#{player.name}'s score is: #{player.score} shiny watermelons."
+    puts "#{dealer.name}'s score is: #{dealer.score}"
+    puts "#{player.name}'s score is: #{player.score}"
   end
 
   def continue_game?
@@ -242,7 +262,7 @@ class Participant
   def wins
     puts "#{name} wins the hand."
     self.score += 1
-    pause
+    pause(3)
   end
 end
 
