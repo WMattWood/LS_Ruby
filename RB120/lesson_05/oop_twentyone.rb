@@ -22,18 +22,6 @@ class Game
     @dealer = Dealer.new
   end
 
-  def pretty_print(string)
-    string.chars.each do |char|
-      print char
-      sleep 0.03
-    end
-    puts "\n"
-    pause
-  end
-
-  def reveal_print()
-  end
-
   def welcome_message
     clear
     pretty_print "Welcome to 21 #{player.name}!"
@@ -49,6 +37,8 @@ class Game
     end
     goodbye_message
   end
+
+  private
 
   def play_one_round
     loop do
@@ -107,7 +97,6 @@ class Game
   # PLAYER METHODS
   def player_turn
     loop do
-      #display_hidden_cards
       if player.bust?
         reveal_dealer_card
         player.goes_bust
@@ -148,18 +137,18 @@ class Game
     dealer.total < 18 && dealer.total <= player.total
   end
 
-  # END OF ROUND METHODS
+  # GAME OUTCOME METHODS
   def show_result
-    if player.bust?
-      dealer.wins
-    elsif dealer.bust?
-      player.wins
-    elsif dealer.total == player.total
-      tie_game
-    else
-      dealer.total > player.total ? dealer.wins : player.wins
+    if player.bust? then dealer.wins
+    elsif dealer.bust? then player.wins
+    elsif tie? then tie_game
+    else determine_winner
     end
     show_round_score
+  end
+
+  def tie?
+    dealer.total == player.total
   end
 
   def tie_game
@@ -167,6 +156,11 @@ class Game
     pause
   end
 
+  def determine_winner
+    dealer.total > player.total ? dealer.wins : player.wins
+  end
+
+  # END OF ROUND METHODS
   def show_round_score
     clear
     puts "#{dealer.name}'s score is: #{dealer.score}"
@@ -179,24 +173,12 @@ class Game
 
   def play_again?
     puts "Would you like to play another hand? (y/n)"
-    answer = nil
-    loop do
-      answer = gets.chomp.downcase
-      break if %w(y n).include? answer
-      puts "Please enter 'y' or 'n'"
-    end
-    answer == 'y'
+    player.approves?
   end
 
   def ask_to_reshuffle
     puts "This deck is finished.  Would you like to reshuffle the deck? (y/n)"
-    answer = nil
-    loop do
-      answer = gets.chomp.downcase
-      break if %w(y n).include? answer
-      puts "Please enter 'y' or 'n'"
-    end
-    reshuffle if answer == 'y'
+    reshuffle if player.approves?
   end
 
   def reshuffle
@@ -208,6 +190,15 @@ class Game
 
   def goodbye_message
     puts 'Thank you for playing!'
+  end
+
+  def pretty_print(string)
+    string.chars.each do |char|
+      print char
+      sleep 0.03
+    end
+    puts "\n"
+    pause
   end
 end
 
@@ -282,6 +273,16 @@ class Player < Participant
     puts "#{name} hits..."
     hand << deck.deal_one_card
     pause
+  end
+
+  def approves?
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if %w(y n).include? answer
+      puts "Please enter 'y' or 'n'"
+    end
+    answer == 'y'
   end
 end
 
