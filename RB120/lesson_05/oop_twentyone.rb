@@ -1,5 +1,3 @@
-require 'pry'
-
 module GameFlow
   def clear
     system 'clear'
@@ -7,6 +5,153 @@ module GameFlow
 
   def pause(time=2)
     sleep time
+  end
+end
+
+class Card
+  attr_reader :suit, :value
+
+  def initialize(suit, value)
+    @suit = suit
+    @value = value
+  end
+
+  def to_s
+    "#{value} of #{suit}"
+  end
+end
+
+class Deck
+  attr_reader :cards
+
+  SUITS = %w(Hearts Diamonds Clubs Spades)
+  # SUITS = %w(Hearts)
+  VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
+
+  def initialize
+    @cards = shuffle_cards
+  end
+
+  def shuffle_cards
+    shuffled_deck = SUITS.product(VALUES).shuffle
+    shuffled_deck.map { |card| Card.new(card[0], card[1]) }
+  end
+
+  def deal_hand(participant)
+    participant.hand = []
+    2.times { participant.hand << deal_one_card }
+  end
+
+  def deal_one_card
+    cards.pop
+  end
+
+  def finished?
+    cards.size < 8
+  end
+end
+
+module Hand
+  def total
+    total = 0
+    total = calculate_card_values(total)
+    hand.select { |card| card.value == "Ace" }.count.times do
+      total -= 10 if total > 21
+    end
+    total
+  end
+
+  def calculate_card_values(total)
+    hand.each do |card|
+      total += case card.value
+               when 'Ace' then 11
+               when 'Jack' then 10
+               when 'Queen' then 10
+               when 'King' then 10
+               else card.value.to_i
+               end
+    end
+    total
+  end
+
+  def show_hand
+    hand.join(', ')
+  end
+
+  def bust?
+    total > 21
+  end
+end
+
+class Participant
+  include Hand
+  include GameFlow
+  attr_accessor :name, :hand, :score
+
+  def initialize
+    @hand = []
+    @score = 0
+    set_name
+  end
+
+  def goes_bust
+    puts "#{name} busts."
+    pause
+  end
+
+  def wins
+    puts "#{name} wins the hand."
+    self.score += 1
+    pause(3)
+  end
+end
+
+class Player < Participant
+  def set_name
+    answer = nil
+    loop do
+      puts "What's your name?"
+      answer = gets.chomp.capitalize
+      break unless answer.empty?
+      puts "Sorry, you must state your name"
+    end
+    self.name = answer
+  end
+
+  def hit(deck)
+    puts "#{name} hits..."
+    hand << deck.deal_one_card
+    pause
+  end
+
+  def approves?
+    answer = nil
+    loop do
+      answer = gets.chomp.downcase
+      break if %w(y n).include? answer
+      puts "Please enter 'y' or 'n'"
+    end
+    answer == 'y'
+  end
+end
+
+class Dealer < Participant
+  DEALER_NAMES = ['Roger', 'Stefan', 'Audrey', 'Carmen']
+
+  def set_name
+    self.name = DEALER_NAMES.sample
+  end
+
+  def hit(deck)
+    pause
+    puts "#{name} hits..."
+    hand << deck.deal_one_card
+    pause
+  end
+
+  def stays
+    puts "#{name} stays."
+    pause
   end
 end
 
@@ -199,153 +344,6 @@ class Game
     end
     puts "\n"
     pause
-  end
-end
-
-module Hand
-  def total
-    total = 0
-    total = calculate_card_values(total)
-    hand.select { |card| card.value == "Ace" }.count.times do
-      total -= 10 if total > 21
-    end
-    total
-  end
-
-  def calculate_card_values(total)
-    hand.each do |card|
-      total += case card.value
-               when 'Ace' then 11
-               when 'Jack' then 10
-               when 'Queen' then 10
-               when 'King' then 10
-               else card.value.to_i
-               end
-    end
-    total
-  end
-
-  def show_hand
-    hand.join(', ')
-  end
-
-  def bust?
-    total > 21
-  end
-end
-
-class Participant
-  include Hand
-  include GameFlow
-  attr_accessor :name, :hand, :score
-
-  def initialize
-    @hand = []
-    @score = 0
-    set_name
-  end
-
-  def goes_bust
-    puts "#{name} busts."
-    pause
-  end
-
-  def wins
-    puts "#{name} wins the hand."
-    self.score += 1
-    pause(3)
-  end
-end
-
-class Player < Participant
-  def set_name
-    answer = nil
-    loop do
-      puts "What's your name?"
-      answer = gets.chomp.capitalize
-      break unless answer.empty?
-      puts "Sorry, you must state your name"
-    end
-    self.name = answer
-  end
-
-  def hit(deck)
-    puts "#{name} hits..."
-    hand << deck.deal_one_card
-    pause
-  end
-
-  def approves?
-    answer = nil
-    loop do
-      answer = gets.chomp.downcase
-      break if %w(y n).include? answer
-      puts "Please enter 'y' or 'n'"
-    end
-    answer == 'y'
-  end
-end
-
-class Dealer < Participant
-  DEALER_NAMES = ['Roger', 'Stefan', 'Audrey', 'Carmen']
-
-  def set_name
-    self.name = DEALER_NAMES.sample
-  end
-
-  def hit(deck)
-    pause
-    puts "#{name} hits..."
-    hand << deck.deal_one_card
-    pause
-  end
-
-  def stays
-    puts "#{name} stays."
-    pause
-  end
-end
-
-class Deck
-  attr_reader :cards
-
-  SUITS = %w(Hearts Diamonds Clubs Spades)
-  # SUITS = %w(Hearts)
-  VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
-
-  def initialize
-    @cards = shuffle_cards
-  end
-
-  def shuffle_cards
-    shuffled_deck = SUITS.product(VALUES).shuffle
-    shuffled_deck.map { |card| Card.new(card[0], card[1]) }
-  end
-
-  def deal_hand(participant)
-    participant.hand = []
-    2.times { participant.hand << deal_one_card }
-  end
-
-  def deal_one_card
-    cards.pop
-  end
-
-  def finished?
-    cards.size < 8
-  end
-end
-
-class Card
-  attr_reader :suit, :value
-
-  def initialize(suit, value)
-    @suit = suit
-    @value = value
-  end
-
-  def to_s
-    "#{value} of #{suit}"
   end
 end
 
