@@ -1,3 +1,8 @@
+# part of the solution is changing the name of the Mailing module's
+# #send method to #send_mail - this is because there is a Object#send
+# method already defined in Ruby.  This prevents unwanted or unintended
+# method overriding.
+
 class Mail
   def to_s
     "#{self.class}"
@@ -31,7 +36,7 @@ module Mailing
     false
   end
 
-  def send(destination, mail)
+  def send_mail(destination, mail)
     "Sending #{mail} from #{name} to: #{destination}"
     # Omitting the actual sending.
   end
@@ -89,5 +94,5 @@ johns_phone_service   = TelephoneService.new('John', 122, '555-232-1121')
 johns_postal_service  = PostalService.new('John', '47 Sunshine Ave.')
 ellens_postal_service = PostalService.new('Ellen', '860 Blackbird Ln.')
 
-puts johns_postal_service.send(ellens_postal_service.street_address, Postcard.new('Greetings from Silicon Valley!'))
+puts johns_postal_service.send_mail(ellens_postal_service.street_address, Postcard.new('Greetings from Silicon Valley!'))
 # => undefined method `860 Blackbird Ln.' for #<PostalService:0x00005571b4aaebe8> (NoMethodError)
