@@ -1,23 +1,43 @@
+# MERGE WITH MUTATION OF INPUT ARRAYS
 def merge(arr1, arr2)
   output = []
-  index2 = 0
 
-  arr1.each do |value|
-    while index2 < arr2.size && arr2[index2] <= value
-      output << arr2[index2]
-      index2 += 1
-    end
-
-    output << value
+  while arr1.size > 0 && arr2.size > 0
+    arr1[0] > arr2[0] ? output << arr2.shift : output << arr1.shift
   end
 
-  p output.concat(arr2[index2..-1])
+  while arr1.size > 0
+    output << arr1.shift
+  end
+
+  while arr2.size > 0
+    output << arr2.shift
+  end
+      
+  output
 end
 
-merge([1, 5, 9], [2, 6, 8]) == [1, 2, 5, 6, 8, 9]
-merge([1, 1, 3], [2, 2]) == [1, 1, 2, 2, 3]
-merge([], [1, 4, 5]) == [1, 4, 5]
-merge([1, 4, 5], []) == [1, 4, 5]
+# DIFFERENT WAY OF DOING THE SAME THING, BUT NO MUTATION
+# def merge(arr1, arr2)
+#   output = []
+#   index2 = 0
+
+#   arr1.each do |value|
+#     while index2 < arr2.size && arr2[index2] <= value
+#       output << arr2[index2]
+#       index2 += 1
+#     end
+
+#     output << value
+#   end
+
+#   p output.concat(arr2[index2..-1])
+# end
+
+p merge([1, 5, 9], [2, 6, 8]) == [1, 2, 5, 6, 8, 9]
+p merge([1, 1, 3], [2, 2]) == [1, 1, 2, 2, 3]
+p merge([], [1, 4, 5]) == [1, 4, 5]
+p merge([1, 4, 5], []) == [1, 4, 5]
 
 # input: two sorted arrays of integers
 # output: one single array which contains all integers from both arrays in a sorted order
