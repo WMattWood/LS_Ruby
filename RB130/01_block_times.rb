@@ -6,6 +6,8 @@
 def times(number)
   counter = 0
   while counter < number do
+    # from within the method, we are yielding execution to the block,
+    # and we are passing an argument to the block. 
     yield (counter)
     counter +=1
   end
