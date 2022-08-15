@@ -73,23 +73,29 @@ class TodoList
   end
 
   def done?
-    @todos.all.done?
+    @todos.all? { |todo| todo.done? }
   end
 
   def item_at(idx)
-    @todos[idx]
+    @todos.fetch(idx)
   end
 
   def mark_done_at(idx)
-    @todos[idx].done!
+    item_at(idx).done!
   end
 
   def mark_undone_at(idx)
-    @todos[idx].undone!
+    item_at(idx).undone!
   end
 
   def done!
-    @todos.all.done!
+    @todos.each_index do |idx|
+      mark_done_at(idx)
+    end
+  end
+
+  def remove_at(idx)
+    @todos.delete(item_at(idx))
   end
 
   def shift
@@ -100,12 +106,8 @@ class TodoList
     @todos.pop
   end
 
-  def remove_at(idx)
-    @todos.delete_at(idx)
-  end
-
   def to_s
-    output_text = "# ---- Today's Todos ----\n"
+    output_text = "# ---- #{@title} ----\n"
     @todos.each do |todo|
       output_text << "# #{todo.to_s}\n"
     end
@@ -169,19 +171,19 @@ list.add(todo3)
 
 #results = list.select { |todo| todo.done? }    # you need to implement this method
 
-puts list
+# puts list
 
-list.mark_done('Buy milk')
+# list.mark_done('Buy milk')
 
-puts list
+# puts list
 
 # list.pop
 
-# puts list
+puts list
 
-# list.mark_done_at(1)
+list.mark_done_at(1)
 
-# puts list
+puts list
 
 # # given
 # todo1 = Todo.new("Buy milk")
