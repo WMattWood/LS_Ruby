@@ -204,4 +204,5 @@ class TodoListTest < MiniTest::Test
     @list.mark_done("Buy milk")
     assert_equal(@todo1, @list.all_done.first)
   end
+  
 end
