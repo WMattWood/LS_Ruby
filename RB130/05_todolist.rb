@@ -107,11 +107,8 @@ class TodoList
   end
 
   def to_s
-    output_text = "# ---- #{@title} ----\n"
-    @todos.each do |todo|
-      output_text << "# #{todo.to_s}\n"
-    end
-
+    output_text = "---- #{@title} ----\n"
+    output_text << @todos.map(&:to_s).join("\n")
     output_text
   end
 
