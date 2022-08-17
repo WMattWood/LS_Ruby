@@ -1,7 +1,7 @@
 def each_cons(array, num_of_cons)
   array.each_with_index do |item, idx|
     break if (idx + num_of_cons) > array.size
-    yield(*array[idx...idx + num_of_cons])
+    yield(*array[idx..(idx + num_of_cons - 1)])
   end
   nil
 end
