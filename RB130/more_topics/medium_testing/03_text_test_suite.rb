@@ -21,9 +21,13 @@ class TextTest < MiniTest::Test
     HEREDOC
 
     # sample_text = Text.new(@file.read)
-    # assert_equal( expected_text, sample_text.swap('a', 'e') )
+    # assert_equal(expected_text, sample_text.swap('a', 'e'))
 
-    assert_equal( expected_text, @sample_text.swap('a', 'e') )
+    assert_equal(expected_text, @sample_text.swap('a', 'e'))
+  end
+
+  def test_word_count
+    assert_equal(72, @sample_text.word_count)
   end
 
   # def teardown

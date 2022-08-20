@@ -8,8 +8,8 @@ class Text
   def swap(letter_one, letter_two)
     @text.gsub(letter_one, letter_two)
   end
+
+  def word_count
+    @text.split.count
+  end
 end
-
-bof = Text.new(File.read("sample_text.txt"))
-
-puts bof.swap('a', 'e')
