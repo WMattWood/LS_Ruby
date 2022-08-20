@@ -6,8 +6,8 @@ require_relative "textclass"
 
 class TextTest < MiniTest::Test
   def setup
+    @file = File.open('sample_text.txt', 'r')
     @sample_text = Text.new(File.read("sample_text.txt"))
-    # @file = File.open('sample_text.txt', 'r')
   end
 
   def test_swap
@@ -19,10 +19,6 @@ class TextTest < MiniTest::Test
     dolor ornere bibendum. Morbi ut messe nec lorem tincidunt elementum vitee id megne. Cres
     et verius meuris, et pheretre mi.
     HEREDOC
-
-    # sample_text = Text.new(@file.read)
-    # assert_equal(expected_text, sample_text.swap('a', 'e'))
-
     assert_equal(expected_text, @sample_text.swap('a', 'e'))
   end
 
@@ -30,7 +26,8 @@ class TextTest < MiniTest::Test
     assert_equal(72, @sample_text.word_count)
   end
 
-  # def teardown
-  #   @file.close
-  # end
+  def teardown
+    @file.close
+    puts "File has been closed: #{@file.closed?}"
+  end
 end
