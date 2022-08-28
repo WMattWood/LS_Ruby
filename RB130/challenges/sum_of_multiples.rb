@@ -7,15 +7,24 @@
 class SumOfMultiples
   attr_reader :multiples
 
-  def initialize(number, *multiples)
-    @number = number
+  def initialize(*multiples)
+    # @number = number
     @multiples = (multiples.size > 0) ? multiples : [3, 5]
   end
 
+  def to(num)
+    output = []
+    @multiples.each do |multiple|
+      arr = (multiple...num).to_a.select { |x| x % multiple == 0 }
+      output << arr
+    end
+    output.flatten.uniq.sum
+  end
+
+  def self.to(num)
+    bof = SumOfMultiples.new
+    bof.to(num)
+  end
 end
 
-bof = SumOfMultiples.new(9)
-p bof.multiples
-
-dof = SumOfMultiples.new(9, 5, 6, 7, 8, 9)
-p dof.multiples
+p SumOfMultiples.to(4)
