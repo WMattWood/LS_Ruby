@@ -26,9 +26,9 @@ class Diamond
     def middle_lines(letter)
       index = LETTERS.index(letter) - 1
       output = []
-      self.mirror_step(0, index) do |x, y|
+      self.mirror_step(0, index) do |x, index|
         letter = LETTERS[x + 1]
-        output << ((' ' * y) + letter + (' ' * (x * 2 + 1) ) + letter + (' ' * y))
+        output << ((' ' * index) + letter + (' ' * (x * 2 + 1) ) + letter + (' ' * index))
       end
       output.flatten.join("\n") + "\n"
     end
@@ -50,6 +50,6 @@ class Diamond
         yield(a, b)
       end
     end
-    
+
   end
 end
