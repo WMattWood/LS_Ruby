@@ -14,7 +14,7 @@ class Diamond
     end
     
     private 
-    
+
     def first_line(letter)
       index = LETTERS.index(letter)
       whitespace = " " * (index)
@@ -50,18 +50,6 @@ class Diamond
         yield(a, b)
       end
     end
-
-    def oddstep(n)
-      n * 2 + 1
-    end
-
+    
   end
-  
-  
-
-
-
 end
-
-bof = Diamond.make_diamond('E')
-puts bof
